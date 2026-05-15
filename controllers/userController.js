@@ -2,24 +2,29 @@
 
 import User from "../models/User.js";
 
-export const registerUser = async (req, res) => {
+export const register = async(req,res) => {
+    const {name , age, gender, email, password, city, mobile} = req.body;
 
-    try {
-        const userData = req.body;
+    let userRecord = new UserModel({
+        name,
+        age,
+        gender,
+        email,
+        password,
+        city,
+        mobile,
+    })
 
-        const newUser = await User.create(userData);
+    let resp = await userRecord.save();
 
-        res.status(201).json({
-            message: "User Registered Successfully",
-            data: newUser
-        });
-    } 
-    catch (err) {
-        res.status(500).json({
-            message: "Error registering user"
-        });
-    }
-};
+    res.json({
+        message: "Success",
+        resp,
+    });
+}
+
+
+
 
 export const loginUser = async (req, res) => {
 
