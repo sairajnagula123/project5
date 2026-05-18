@@ -1,8 +1,13 @@
 import express from "express";
 import { config } from "dotenv";
-import  connectDB  from "./dbconnection.js";
+
+import connectDB from "./dbconnection.js";
+
 import userRoutes from "./routes/UserRoute.js";
+import recipeRoutes from "./routes/recipeRoute.js";
+
 import { errorHandle, Logger } from "./middleware/middleware.js";
+
 config();
 
 const app = express();
@@ -12,15 +17,21 @@ const uri = process.env.DB_URL;
 
 app.use(express.json());
 
-// Routes
+// Middleware
 app.use(Logger);
+
+// Routes
 app.use("/u", userRoutes);
 
+app.use("/recipes", recipeRoutes);
+
+// Error Middleware
 app.use(errorHandle);
 
-const startServer = async (params) => {
+const startServer = async () => {
   try {
     await connectDB(uri);
+
     app.listen(port, () => {
       console.log(`Server running on http://localhost:${port}`);
     });
