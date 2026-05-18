@@ -1,8 +1,8 @@
 import express from "express";
 import { config } from "dotenv";
-import { connectDB } from "./dbconnection.js";
-import userRoutes from "./routes/UserRoutes.js";
-import { errorHandle, Logger } from "./middleware.js";
+import  connectDB  from "./dbconnection.js";
+import userRoutes from "./routes/UserRoute.js";
+import { errorHandle, Logger } from "./middleware/middleware.js";
 config();
 
 const app = express();

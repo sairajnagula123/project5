@@ -1,5 +1,6 @@
-import UserModel from "../models/UserModel.js";
+import UserModel from "../models/User.js";
 import { hash, compare } from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export const registerUser = async (req, res) => {
   const { name, age, gender, email, password, city, mobile } = req.body;
@@ -54,23 +55,45 @@ export const GetUserByEmail = async (req, res) => {
 };
 
 // login
+
 export const Login = async (req, res) => {
   const { email, password } = req.body;
-  const userExists = await UserModel.findOne({ email: email });
+
+  const userExists = await UserModel.findOne({ email });
+
   if (!userExists) {
-    res.status(200).json({
-      message: "User doesn't Exists please register",
+    return res.status(404).json({
+      message: "User doesn't exist",
     });
   }
 
-  const isPassowrdMatch = await compare(password, userExists.password);
+  const isPasswordMatch = await compare(
+    password,
+    userExists.password
+  );
 
-  if (!isPassowrdMatch) {
-    res.status(404).json({ message: "Password mismatch! Try Again!" });
+  if (!isPasswordMatch) {
+    return res.status(401).json({
+      message: "Password mismatch",
+    });
   }
-  res.status(200).json({ message: "Successfully LoggedIn" });
-};
 
+  const token = jwt.sign(
+    {
+      id: userExists._id,
+      email: userExists.email,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "1d",
+    }
+  );
+
+  res.status(200).json({
+    message: "Login Success",
+    token,
+  });
+};
 // update user
 
 //delete user
