@@ -1,93 +1,76 @@
-// controllers/userController.js
-
-import User from "../models/User.js";
+import UserModel from "../models/UserModel.js";
+import { hash, compare } from "bcrypt";
 
 export const registerUser = async (req, res) => {
+  const { name, age, gender, email, password, city, mobile } = req.body;
+  if (!name) {
+    let err = new Error("Name field is missing!");
+    throw err;
+  }
+  const hashPwd = await hash(password, 12);
+  const userExists = await UserModel.findOne({ email: email }).select(
+    "-password",
+  );
 
-    try {
+  if (userExists) {
+    res.status(200).json({
+      message: "User already Exists please login",
+    });
+  }
+  let userRecord = new UserModel({
+    name: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase(),
+    age,
+    gender,
+    email,
+    password: hashPwd,
+    city,
+    mobile,
+  });
 
-        const {
-            name,
-            age,
-            gender,
-            email,
-            password,
-            city,
-            mobile
-        } = req.body;
+  let { _id } = await userRecord.save();
 
-        // check existing user
-        const existingUser = await User.findOne({ email });
-
-        if (existingUser) {
-            return res.status(400).json({
-                message: "User already exists"
-            });
-        }
-
-        // create user
-        const userRecord = new User({
-            name,
-            age,
-            gender,
-            email,
-            password,
-            city,
-            mobile,
-        });
-
-        const resp = await userRecord.save();
-
-        res.status(201).json({
-            message: "User Registered Successfully",
-            data: resp,
-        });
-
-    }
-    catch (err) {
-
-        res.status(500).json({
-            message: "Registration Failed",
-            error: err.message
-        });
-    }
+  res.status(201).json({
+    message: "Success",
+    _id,
+  });
 };
 
-
-
-export const loginUser = async (req, res) => {
-
-    try {
-
-        const { email, password } = req.body;
-
-        // check user
-        const user = await User.findOne({ email });
-
-        if (!user) {
-            return res.status(404).json({
-                message: "User not found"
-            });
-        }
-
-        // check password
-        if (user.password !== password) {
-            return res.status(401).json({
-                message: "Invalid Password"
-            });
-        }
-
-        res.status(200).json({
-            message: "Login Successful",
-            user
-        });
-
-    }
-    catch (err) {
-
-        res.status(500).json({
-            message: "Error during login",
-            error: err.message
-        });
-    }
+export const GetUsers = async (req, res) => {
+  const users = await UserModel.find().select("-password");
+  res.status(200).json({
+    message: "Success",
+    users,
+  });
 };
+
+export const GetUserByEmail = async (req, res) => {
+  const { email } = req.params;
+
+  const user = await UserModel.findOne({ email: email }).select("-password");
+  res.status(200).json({
+    message: "Success",
+    users,
+  });
+};
+
+// login
+export const Login = async (req, res) => {
+  const { email, password } = req.body;
+  const userExists = await UserModel.findOne({ email: email });
+  if (!userExists) {
+    res.status(200).json({
+      message: "User doesn't Exists please register",
+    });
+  }
+
+  const isPassowrdMatch = await compare(password, userExists.password);
+
+  if (!isPassowrdMatch) {
+    res.status(404).json({ message: "Password mismatch! Try Again!" });
+  }
+  res.status(200).json({ message: "Successfully LoggedIn" });
+};
+
+// update user
+
+//delete user

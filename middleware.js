@@ -1,28 +1,12 @@
-// middleware/commonMiddleware.js
-
-
-// LOGGER
-export const logger = (req, res, next) => {
-
-    console.log("Method:", req.method);
-
-    console.log("URL:", req.url);
-
-    console.log("Time:", new Date());
-
-    next();
+export const Logger = (req, res, next) => {
+  console.log({
+    URL: req.url,
+    Method: req.method,
+    Date: new Date(),
+  });
+  next();
 };
 
-
-
-
-// ERROR HANDLER
-export const errorHandler = (err, req, res, next) => {
-
-    console.log("Error:", err.message);
-
-    res.status(500).json({
-        message: "Something went wrong",
-        error: err.message
-    });
+export const errorHandle = (err, req, res, next) => {
+  res.status(404).json({ Error: err.message });
 };
